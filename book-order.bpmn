@@ -21,11 +21,10 @@
       <bpmn:incoming>C2</bpmn:incoming>
       <bpmn:outgoing>C3</bpmn:outgoing>
     </bpmn:sendTask>
-    <bpmn:intermediateCatchEvent id="C_wait" name="Отримати результат">
+    <bpmn:receiveTask id="C_wait" name="Отримати результат" messageRef="Result">
       <bpmn:incoming>C3</bpmn:incoming>
       <bpmn:outgoing>C4</bpmn:outgoing>
-      <bpmn:messageEventDefinition id="C_wait_message" messageRef="Result" />
-    </bpmn:intermediateCatchEvent>
+    </bpmn:receiveTask>
     <bpmn:userTask id="C_review" name="Переглянути відповідь">
       <bpmn:incoming>C4</bpmn:incoming>
       <bpmn:outgoing>C5</bpmn:outgoing>
@@ -97,14 +96,11 @@
       <bpmndi:BPMNShape id="C_choose_di" bpmnElement="C_choose" bioc:fill="#b9dff1" bioc:stroke="#172b4d">
         <dc:Bounds x="180" y="100" width="160" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="C_send_di" bpmnElement="C_send" bioc:fill="#f08b8b" bioc:stroke="#172b4d">
+      <bpmndi:BPMNShape id="C_send_di" bpmnElement="C_send" bioc:fill="#b9dff1" bioc:stroke="#172b4d">
         <dc:Bounds x="370" y="100" width="160" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="C_wait_di" bpmnElement="C_wait" bioc:fill="#b8e6bd" bioc:stroke="#172b4d">
-        <dc:Bounds x="1132" y="122" width="36" height="36" />
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1095.0" y="166" width="110" height="35" />
-        </bpmndi:BPMNLabel>
+        <dc:Bounds x="1100" y="100" width="100" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="C_review_di" bpmnElement="C_review" bioc:fill="#b8e6bd" bioc:stroke="#172b4d">
         <dc:Bounds x="1220" y="100" width="160" height="80" />
@@ -155,10 +151,10 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="C3_di" bpmnElement="C3">
         <di:waypoint x="530" y="140" />
-        <di:waypoint x="1132" y="140" />
+        <di:waypoint x="1100" y="140" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="C4_di" bpmnElement="C4">
-        <di:waypoint x="1168" y="140" />
+        <di:waypoint x="1200" y="140" />
         <di:waypoint x="1220" y="140" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="C5_di" bpmnElement="C5">
@@ -215,7 +211,7 @@
         <di:waypoint x="1180" y="365" />
         <di:waypoint x="1180" y="290" />
         <di:waypoint x="1150" y="290" />
-        <di:waypoint x="1150" y="158" />
+        <di:waypoint x="1150" y="180" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="1200" y="290" width="110" height="28" />
         </bpmndi:BPMNLabel>
@@ -224,8 +220,8 @@
         <di:waypoint x="1020" y="570" />
         <di:waypoint x="1475" y="570" />
         <di:waypoint x="1475" y="275" />
-        <di:waypoint x="1162" y="275" />
-        <di:waypoint x="1162" y="154" />
+        <di:waypoint x="1180" y="275" />
+        <di:waypoint x="1180" y="180" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="1300" y="520" width="120" height="32" />
         </bpmndi:BPMNLabel>
