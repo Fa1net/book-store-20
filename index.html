@@ -41,7 +41,11 @@
           min="0" max="99" step="1" value="0" data-price="280"></td></tr>
     </tbody>
   </table>
-  <!-- DELIVERY_CONTROL -->
+  <label for="delivery">Спосіб отримання:</label>
+  <select id="delivery">
+    <option value="0">Самовивіз — безкоштовно</option>
+    <option value="60">Доставка — 60 грн</option>
+  </select>
   <br><button id="calculate" type="button">Розрахувати суму</button>
   <p id="total" class="result" role="status" aria-live="polite"></p>
   <p class="note">Навчальний приклад. Ціни умовні. Оплата не виконується.</p>
@@ -56,8 +60,8 @@
     }
     const subtotal = quantities.reduce((sum, input) =>
       sum + Number(input.value) * Number(input.dataset.price), 0);
-    // DELIVERY_CALCULATION
-    const total = subtotal;
+    const delivery = subtotal > 0 ? Number(document.getElementById('delivery').value) : 0;
+    const total = subtotal + delivery;
     document.getElementById('total').textContent =
       'Загальна сума: ' + total.toLocaleString('uk-UA') + ' грн';
   }
