@@ -1,0 +1,235 @@
+<?xml version='1.0' encoding='utf-8'?>
+<bpmn:definitions xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_Books" targetNamespace="https://example.org/book-store-20" exporter="Book store coursework">
+  <bpmn:message id="Order" name="Замовлення книг" />
+  <bpmn:message id="Result" name="Результат замовлення" />
+  <bpmn:collaboration id="Collaboration_Books">
+    <bpmn:participant id="Pool_Client" name="Клієнт" processRef="Client" />
+    <bpmn:participant id="Pool_System" name="Система" processRef="System" />
+    <bpmn:messageFlow id="M1" name="Замовлення" sourceRef="C_send" targetRef="S_start" />
+    <bpmn:messageFlow id="M2" name="Підтвердження" sourceRef="S_confirm" targetRef="C_wait" />
+    <bpmn:messageFlow id="M3" name="Немає в наявності" sourceRef="S_reject" targetRef="C_wait" />
+  </bpmn:collaboration>
+  <bpmn:process id="Client" isExecutable="false">
+    <bpmn:startEvent id="C_start" name="Початок">
+      <bpmn:outgoing>C1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="C_choose" name="Обрати книги">
+      <bpmn:incoming>C1</bpmn:incoming>
+      <bpmn:outgoing>C2</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sendTask id="C_send" name="Надіслати замовлення" messageRef="Order">
+      <bpmn:incoming>C2</bpmn:incoming>
+      <bpmn:outgoing>C3</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:intermediateCatchEvent id="C_wait" name="Отримати результат">
+      <bpmn:incoming>C3</bpmn:incoming>
+      <bpmn:outgoing>C4</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="C_wait_message" messageRef="Result" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:userTask id="C_review" name="Переглянути відповідь">
+      <bpmn:incoming>C4</bpmn:incoming>
+      <bpmn:outgoing>C5</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="C_end" name="Завершення">
+      <bpmn:incoming>C5</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="C1" sourceRef="C_start" targetRef="C_choose" />
+    <bpmn:sequenceFlow id="C2" sourceRef="C_choose" targetRef="C_send" />
+    <bpmn:sequenceFlow id="C3" sourceRef="C_send" targetRef="C_wait" />
+    <bpmn:sequenceFlow id="C4" sourceRef="C_wait" targetRef="C_review" />
+    <bpmn:sequenceFlow id="C5" sourceRef="C_review" targetRef="C_end" />
+  </bpmn:process>
+  <bpmn:process id="System" isExecutable="false">
+    <bpmn:startEvent id="S_start" name="Отримати замовлення">
+      <bpmn:outgoing>S1</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="S_start_message" messageRef="Order" />
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="S_check" name="Перевірити наявність">
+      <bpmn:incoming>S1</bpmn:incoming>
+      <bpmn:outgoing>S2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="S_gate" name="Книги є?" default="S6">
+      <bpmn:incoming>S2</bpmn:incoming>
+      <bpmn:outgoing>S3</bpmn:outgoing>
+      <bpmn:outgoing>S6</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="S_reserve" name="Зарезервувати книги">
+      <bpmn:documentation>У реальній системі перевірка та резервування виконуються в одній транзакції.</bpmn:documentation>
+      <bpmn:incoming>S3</bpmn:incoming>
+      <bpmn:outgoing>S4</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sendTask id="S_confirm" name="Надіслати підтвердження" messageRef="Result">
+      <bpmn:incoming>S4</bpmn:incoming>
+      <bpmn:outgoing>S5</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:sendTask id="S_reject" name="Повідомити про відсутність" messageRef="Result">
+      <bpmn:incoming>S6</bpmn:incoming>
+      <bpmn:outgoing>S7</bpmn:outgoing>
+    </bpmn:sendTask>
+    <bpmn:endEvent id="S_end" name="Запит оброблено">
+      <bpmn:incoming>S5</bpmn:incoming>
+      <bpmn:incoming>S7</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="S1" sourceRef="S_start" targetRef="S_check" />
+    <bpmn:sequenceFlow id="S2" sourceRef="S_check" targetRef="S_gate" />
+    <bpmn:sequenceFlow id="S3" sourceRef="S_gate" targetRef="S_reserve" name="Так">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">stockAvailable = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="S4" sourceRef="S_reserve" targetRef="S_confirm" />
+    <bpmn:sequenceFlow id="S5" sourceRef="S_confirm" targetRef="S_end" />
+    <bpmn:sequenceFlow id="S6" sourceRef="S_gate" targetRef="S_reject" name="Ні" />
+    <bpmn:sequenceFlow id="S7" sourceRef="S_reject" targetRef="S_end" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_Books">
+    <bpmndi:BPMNPlane id="Plane_Books" bpmnElement="Collaboration_Books">
+      <bpmndi:BPMNShape id="Pool_Client_di" bpmnElement="Pool_Client" isHorizontal="true" bioc:fill="#ffffff" bioc:stroke="#172b4d">
+        <dc:Bounds x="50" y="40" width="1450" height="210" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Pool_System_di" bpmnElement="Pool_System" isHorizontal="true" bioc:fill="#ffffff" bioc:stroke="#172b4d">
+        <dc:Bounds x="50" y="340" width="1450" height="340" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="C_start_di" bpmnElement="C_start" bioc:fill="#86df88" bioc:stroke="#172b4d">
+        <dc:Bounds x="105" y="122" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="68.0" y="166" width="110" height="35" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="C_choose_di" bpmnElement="C_choose" bioc:fill="#b9dff1" bioc:stroke="#172b4d">
+        <dc:Bounds x="180" y="100" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="C_send_di" bpmnElement="C_send" bioc:fill="#f08b8b" bioc:stroke="#172b4d">
+        <dc:Bounds x="370" y="100" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="C_wait_di" bpmnElement="C_wait" bioc:fill="#b8e6bd" bioc:stroke="#172b4d">
+        <dc:Bounds x="1132" y="122" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1095.0" y="166" width="110" height="35" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="C_review_di" bpmnElement="C_review" bioc:fill="#b8e6bd" bioc:stroke="#172b4d">
+        <dc:Bounds x="1220" y="100" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="C_end_di" bpmnElement="C_end" bioc:fill="#f08b8b" bioc:stroke="#172b4d">
+        <dc:Bounds x="1425" y="122" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1388.0" y="166" width="110" height="35" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_start_di" bpmnElement="S_start" bioc:fill="#86df88" bioc:stroke="#172b4d">
+        <dc:Bounds x="432" y="412" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="395.0" y="456" width="110" height="35" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_check_di" bpmnElement="S_check" bioc:fill="#b9dff1" bioc:stroke="#172b4d">
+        <dc:Bounds x="520" y="390" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_gate_di" bpmnElement="S_gate" isMarkerVisible="true" bioc:fill="#ffd17c" bioc:stroke="#172b4d">
+        <dc:Bounds x="735" y="405" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="705.0" y="463" width="110" height="35" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_reserve_di" bpmnElement="S_reserve" bioc:fill="#b8e6bd" bioc:stroke="#172b4d">
+        <dc:Bounds x="860" y="365" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_confirm_di" bpmnElement="S_confirm" bioc:fill="#b8e6bd" bioc:stroke="#172b4d">
+        <dc:Bounds x="1100" y="365" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_reject_di" bpmnElement="S_reject" bioc:fill="#f3c2c8" bioc:stroke="#172b4d">
+        <dc:Bounds x="860" y="550" width="160" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="S_end_di" bpmnElement="S_end" bioc:fill="#f08b8b" bioc:stroke="#172b4d">
+        <dc:Bounds x="1425" y="412" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1388.0" y="456" width="110" height="35" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="C1_di" bpmnElement="C1">
+        <di:waypoint x="141" y="140" />
+        <di:waypoint x="180" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="C2_di" bpmnElement="C2">
+        <di:waypoint x="340" y="140" />
+        <di:waypoint x="370" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="C3_di" bpmnElement="C3">
+        <di:waypoint x="530" y="140" />
+        <di:waypoint x="1132" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="C4_di" bpmnElement="C4">
+        <di:waypoint x="1168" y="140" />
+        <di:waypoint x="1220" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="C5_di" bpmnElement="C5">
+        <di:waypoint x="1380" y="140" />
+        <di:waypoint x="1425" y="140" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S1_di" bpmnElement="S1">
+        <di:waypoint x="468" y="430" />
+        <di:waypoint x="520" y="430" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S2_di" bpmnElement="S2">
+        <di:waypoint x="680" y="430" />
+        <di:waypoint x="735" y="430" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S3_di" bpmnElement="S3">
+        <di:waypoint x="760" y="405" />
+        <di:waypoint x="760" y="405" />
+        <di:waypoint x="860" y="405" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="790" y="380" width="60" height="22" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S4_di" bpmnElement="S4">
+        <di:waypoint x="1020" y="405" />
+        <di:waypoint x="1100" y="405" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S5_di" bpmnElement="S5">
+        <di:waypoint x="1260" y="405" />
+        <di:waypoint x="1335" y="405" />
+        <di:waypoint x="1335" y="430" />
+        <di:waypoint x="1425" y="430" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S6_di" bpmnElement="S6">
+        <di:waypoint x="760" y="455" />
+        <di:waypoint x="760" y="590" />
+        <di:waypoint x="860" y="590" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="790" y="565" width="60" height="22" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="S7_di" bpmnElement="S7">
+        <di:waypoint x="1020" y="590" />
+        <di:waypoint x="1443" y="590" />
+        <di:waypoint x="1443" y="448" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="M1_di" bpmnElement="M1">
+        <di:waypoint x="450" y="180" />
+        <di:waypoint x="450" y="412" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="460" y="280" width="100" height="28" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="M2_di" bpmnElement="M2">
+        <di:waypoint x="1180" y="365" />
+        <di:waypoint x="1180" y="290" />
+        <di:waypoint x="1150" y="290" />
+        <di:waypoint x="1150" y="158" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1200" y="290" width="110" height="28" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="M3_di" bpmnElement="M3">
+        <di:waypoint x="1020" y="570" />
+        <di:waypoint x="1475" y="570" />
+        <di:waypoint x="1475" y="275" />
+        <di:waypoint x="1162" y="275" />
+        <di:waypoint x="1162" y="154" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1300" y="520" width="120" height="32" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

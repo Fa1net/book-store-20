@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Покупка книг онлайн</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 36px; background: #f4f5f7;
+      color: #172b4d; font-family: Arial, sans-serif; }
+    main { max-width: 820px; margin: auto; padding: 32px;
+      background: white; border-radius: 12px; }
+    h1 { margin-top: 8px; } .label { color: #47664c; font-weight: bold; }
+    table { width: 100%; border-collapse: collapse; margin: 26px 0; }
+    th, td { padding: 14px 8px; border-bottom: 1px solid #dfe3e8; text-align: left; }
+    input { width: 72px; padding: 8px; }
+    select, button { padding: 11px; font-size: 16px; }
+    button { background: #285d40; color: white; border: 0;
+      border-radius: 6px; cursor: pointer; margin-top: 22px; }
+    .result { padding: 18px; background: #edf5ee; margin-top: 20px;
+      font-size: 21px; font-weight: bold; border-radius: 6px; }
+    .note { font-size: 14px; color: #58677b; }
+  </style>
+</head>
+<body>
+<main>
+  <p class="label">КНИЖКОВИЙ МАГАЗИН · ВАРІАНТ 20</p>
+  <h1>Покупка книг онлайн</h1>
+  <p>Оберіть кількість книг і розрахуйте вартість кошика.</p>
+  <table>
+    <thead><tr><th>Книга</th><th>Ціна</th><th>Кількість</th></tr></thead>
+    <tbody>
+      <tr><td>Місто — Валер’ян Підмогильний</td><td>320 грн</td>
+        <td><input aria-label="Кількість Місто" class="quantity" type="number"
+          min="0" max="99" step="1" value="1" data-price="320"></td></tr>
+      <tr><td>Тигролови — Іван Багряний</td><td>450 грн</td>
+        <td><input aria-label="Кількість Тигролови" class="quantity" type="number"
+          min="0" max="99" step="1" value="1" data-price="450"></td></tr>
+      <tr><td>Кобзар — Тарас Шевченко</td><td>280 грн</td>
+        <td><input aria-label="Кількість Кобзар" class="quantity" type="number"
+          min="0" max="99" step="1" value="0" data-price="280"></td></tr>
+    </tbody>
+  </table>
+  <!-- DELIVERY_CONTROL -->
+  <br><button id="calculate" type="button">Розрахувати суму</button>
+  <p id="total" class="result" role="status" aria-live="polite"></p>
+  <p class="note">Навчальний приклад. Ціни умовні. Оплата не виконується.</p>
+</main>
+<script>
+  function calculateTotal() {
+    const quantities = [...document.querySelectorAll('.quantity')];
+    if (quantities.some(input => !input.checkValidity() || input.value === '')) {
+      document.getElementById('total').textContent =
+        'Введіть цілу кількість від 0 до 99 для кожної книги.';
+      return;
+    }
+    const subtotal = quantities.reduce((sum, input) =>
+      sum + Number(input.value) * Number(input.dataset.price), 0);
+    // DELIVERY_CALCULATION
+    const total = subtotal;
+    document.getElementById('total').textContent =
+      'Загальна сума: ' + total.toLocaleString('uk-UA') + ' грн';
+  }
+  document.getElementById('calculate').addEventListener('click', calculateTotal);
+  calculateTotal();
+</script>
+</body>
+</html>
